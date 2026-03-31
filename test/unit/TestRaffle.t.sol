@@ -99,6 +99,67 @@ contract TestRaffle is Test {
     }
 
     /* Check & perform upkeep testing functions */
+    function testCheckUpkeepReturnsFalseIfNotEnoughTimeHasPassed() public {
+        vm.prank(USER);
+        raffle.enterRaffle{value: SEND_VALUE}();
+
+        (bool upkeepNeeded,) = raffle.checkUpkeep("");
+
+        assertEq(upkeepNeeded, false);
+    }
+
+    function testCheckUpkeepReturnsFalseIfStateIsCalculating() public {
+        // Arrange
+        vm.prank(USER);
+        raffle.enterRaffle{value: SEND_VALUE}();
+
+        vm.warp(block.timestamp + interval + 1);
+        vm.roll(block.number + 1);
+
+        raffle.performUpkeep("");
+
+        // Act
+        (bool upkeepNeeded,) = raffle.checkUpkeep("");
+
+        // Assert
+        assertEq(upkeepNeeded, false);
+    }
+
+    function testCheckUpkeepReturnsFalseIfArrayHasNoPlayersOrContractHasNoBalance() public {
+        // Arrange
+        vm.warp(block.timestamp + interval + 1);
+        vm.roll(block.number + 1);
+
+        // Act
+        (bool upkeepNeeded,) = raffle.checkUpkeep("");
+
+        // Assert
+        assertEq(upkeepNeeded, false);
+    }
+
+    function testCheckUpkeepReturnsTrueWhenAllConditionsMet() public {
+        vm.prank(USER);
+        raffle.enterRaffle{value: SEND_VALUE}();
+
+        vm.warp(block.timestamp + interval + 1);
+        vm.roll(block.number + 1);
+
+        (bool upkeepNeeded,) = raffle.checkUpkeep("");
+
+        assertEq(upkeepNeeded, true);
+    }
+
+    function testPerformUpkeepRevertsIfNoUpkeepIsNeeded() public {
+        // Arrange
+        vm.warp(block.timestamp + interval + 1);
+        vm.roll(block.number + 1);
+
+        // Act
+        vm.expectRevert(Raffle.Raffle__UpkeepNotNeeded.selector);
+
+        // Assert
+        raffle.performUpkeep("");
+    }
 
     /* Fulfill random words testing functions */
 
