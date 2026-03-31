@@ -8,6 +8,7 @@ import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/autom
 contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
     /* Errors */
     error Raffle__NotEnoughEthSent();
+    error Raffle__RaffleNotOpened();
 
     /* Type declarations */
     enum State {
@@ -47,7 +48,22 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
     }
 
     /* Functions */
-    function enterRaffle() external payable {}
+    function enterRaffle() external payable {
+        // Checks
+        if (msg.value < i_entranceFee) {
+            revert Raffle__NotEnoughEthSent();
+        }
+
+        if (s_state != State.Open) {
+            revert Raffle__RaffleNotOpened();
+        }
+
+        // Effects
+        s_players.push(payable(msg.sender));
+
+        // Interactions
+        emit NewPlayer(msg.sender);
+    }
 
     function checkUpkeep(
         bytes calldata /* checkData */
