@@ -162,6 +162,121 @@ contract TestRaffle is Test {
     }
 
     /* Fulfill random words testing functions */
+    function testFulfillRandomWordsPicksWinner() public {
+        // Arrange
+        vm.prank(USER);
+        raffle.enterRaffle{value: SEND_VALUE}();
+        vm.warp(block.timestamp + interval + 1);
+        vm.roll(block.number + 1);
+
+        // Act
+        vm.prank(USER);
+        raffle.performUpkeep("");
+
+        VRFCoordinatorV2_5Mock(vrfCoordinator).fulfillRandomWords(1, address(raffle));
+
+        // Assert
+        assertEq(raffle.getRecentWinner(), USER);
+    }
+
+    function testFulfillRandomWordsPicksWinnerAndPays() public {
+        // Arrange
+        vm.prank(USER);
+        raffle.enterRaffle{value: SEND_VALUE}();
+        vm.warp(block.timestamp + interval + 1);
+        vm.roll(block.number + 1);
+
+        // Act
+        vm.prank(USER);
+        raffle.performUpkeep("");
+
+        VRFCoordinatorV2_5Mock(vrfCoordinator).fulfillRandomWords(1, address(raffle));
+
+        // Assert
+        assertEq(raffle.getContractBalance(), 0);
+    }
+
+    function testRecentWinnerGetsSetProperly() public {
+        // Arrange
+        vm.prank(USER);
+        raffle.enterRaffle{value: SEND_VALUE}();
+        vm.warp(block.timestamp + interval + 1);
+        vm.roll(block.number + 1);
+
+        // Act
+        vm.prank(USER);
+        raffle.performUpkeep("");
+        VRFCoordinatorV2_5Mock(vrfCoordinator).fulfillRandomWords(1, address(raffle));
+
+        // Assert
+        assertEq(raffle.getRecentWinner(), USER);
+    }
+
+    function testRaffleStateGetsBackToOpened() public {
+        // Arrange
+        vm.prank(USER);
+        raffle.enterRaffle{value: SEND_VALUE}();
+        vm.warp(block.timestamp + interval + 1);
+        vm.roll(block.number + 1);
+
+        // Act
+        vm.prank(USER);
+        raffle.performUpkeep("");
+        VRFCoordinatorV2_5Mock(vrfCoordinator).fulfillRandomWords(1, address(raffle));
+
+        // Assert
+        assertEq(uint256(raffle.getRaffleState()), uint256(Raffle.State.Open));
+    }
+
+    function testPlayerArrayResetsToZeroLength() public {
+        // Arrange
+        vm.prank(USER);
+        raffle.enterRaffle{value: SEND_VALUE}();
+        vm.warp(block.timestamp + interval + 1);
+        vm.roll(block.number + 1);
+
+        // Act
+        vm.prank(USER);
+        raffle.performUpkeep("");
+        VRFCoordinatorV2_5Mock(vrfCoordinator).fulfillRandomWords(1, address(raffle));
+
+        // Assert
+        assertEq(raffle.getPlayersLength(), 0);
+    }
+
+    function testLastTimetampResets() public {
+        // Arrange
+        vm.prank(USER);
+        raffle.enterRaffle{value: SEND_VALUE}();
+        vm.warp(block.timestamp + interval + 1);
+        vm.roll(block.number + 1);
+
+        // Act
+        vm.prank(USER);
+        raffle.performUpkeep("");
+        VRFCoordinatorV2_5Mock(vrfCoordinator).fulfillRandomWords(1, address(raffle));
+
+        // Assert
+        assertEq(raffle.getLastTimestamp(), block.timestamp);
+    }
+
+    function testEmitsWinnerPicked() public {
+        // Arrange
+        vm.prank(USER);
+        raffle.enterRaffle{value: SEND_VALUE}();
+        vm.warp(block.timestamp + interval + 1);
+        vm.roll(block.number + 1);
+
+        // Act
+        vm.prank(USER);
+        raffle.performUpkeep("");
+
+        vm.expectEmit(true, false, false, false);
+        emit NewWinner(USER);
+
+        // Assert
+        VRFCoordinatorV2_5Mock(vrfCoordinator).fulfillRandomWords(1, address(raffle));
+    }
 
     /* Getter function tests */
     function testGetEntranceFee() public view {
