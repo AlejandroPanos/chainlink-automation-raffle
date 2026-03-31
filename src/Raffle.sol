@@ -10,6 +10,7 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
     error Raffle__NotEnoughEthSent();
     error Raffle__RaffleNotOpened();
     error Raffle__UpkeepNotNeeded();
+    error Raffle__TransferNotCompleted();
 
     /* Type declarations */
     enum State {
@@ -127,7 +128,25 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
     )
         internal
         override
-    {}
+    {
+        // Effects
+        uint256 indexOfWinner = randomWords[0] % s_players.length;
+        address payable winner = s_players[indexOfWinner];
+        s_recentWinner = winner;
+
+        uint256 amount = address(this).balance;
+        s_state = State.Open;
+        s_players = new address payable[](0);
+        s_lastTimeStamp = block.timestamp;
+
+        emit NewWinner(winner);
+
+        // Interactions
+        (bool success,) = winner.call{value: amount}("");
+        if (!success) {
+            revert Raffle__TransferNotCompleted();
+        }
+    }
 
     /* Getter functions */
     function getPlayers() external view returns (address payable[] memory) {
