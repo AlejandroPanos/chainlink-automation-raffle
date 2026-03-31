@@ -79,4 +79,9 @@ contract HelperConfig is Script {
             account: ANVIL_DEFAULT_SENDER
         });
     }
+
+    /* Getter function */
+    function getConfig() external view returns (NetworkConfig memory) {
+        return activeNetworkConfig;
+    }
 }
