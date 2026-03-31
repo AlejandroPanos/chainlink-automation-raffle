@@ -15,6 +15,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
     }
 
     /* State variables */
+    uint256 private immutable i_entranceFee;
     bytes32 private immutable i_keyHash;
     uint256 private immutable i_subId;
     uint16 private constant CONFIRMATIONS = 3;
@@ -23,6 +24,10 @@ contract Raffle is VRFConsumerBaseV2Plus {
 
     uint256 private immutable i_interval;
     address payable[] private s_players;
+    State private s_state;
+
+    uint256 private s_lastTimeStamp;
+    address private s_recentWinner;
 
     /* Events */
     event NewPlayer(address indexed sender);
@@ -30,8 +35,14 @@ contract Raffle is VRFConsumerBaseV2Plus {
     event NewWinner(address indexed winner);
 
     /* Constructor */
-    constructor(address vrfCoordinator, bytes32 keyHash) VRFConsumerBaseV2Plus(vrfCoordinator) {
+    constructor(address vrfCoordinator, uint256 entranceFee, bytes32 keyHash, uint256 subId, uint256 interval)
+        VRFConsumerBaseV2Plus(vrfCoordinator)
+    {
+        i_entranceFee = entranceFee;
         i_keyHash = keyHash;
+        i_subId = subId;
+        i_interval = interval;
+        s_lastTimeStamp = block.timestamp;
     }
 
     /* Functions */
