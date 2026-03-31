@@ -34,7 +34,7 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
 
     /* Events */
     event NewPlayer(address indexed sender);
-    event WinnerRequested(address indexed sender);
+    event NewUpkeep(uint256 indexed request);
     event NewWinner(address indexed winner);
 
     /* Constructor */
@@ -67,9 +67,9 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
     }
 
     function checkUpkeep(
-        bytes calldata /* checkData */
+        bytes memory /* checkData */
     )
-        external
+        public
         view
         override
         returns (
@@ -95,7 +95,30 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
     )
         external
         override
-    {}
+    {
+        // Checks
+        (bool upkeepNeeded,) = checkUpkeep("");
+        if (!upkeepNeeded) {
+            revert Raffle__UpkeepNotNeeded();
+        }
+
+        // Effects
+        s_state = State.Calculating;
+
+        // Interactions
+        uint256 requestId = s_vrfCoordinator.requestRandomWords(
+            VRFV2PlusClient.RandomWordsRequest({
+                keyHash: i_keyHash,
+                subId: i_subId,
+                requestConfirmations: CONFIRMATIONS,
+                callbackGasLimit: GAS_LIMIT,
+                numWords: NUM_WORDS,
+                extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: false}))
+            })
+        );
+
+        emit NewUpkeep(requestId);
+    }
 
     function fulfillRandomWords(
         uint256,
