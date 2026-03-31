@@ -15,6 +15,7 @@ contract TestRaffle is Test {
     /* State variables */
     address USER = makeAddr("USER");
     uint256 private constant DEAL = 10 ether;
+    uint256 private constant SEND_VALUE = 0.05 ether;
 
     uint256 entranceFee;
     uint256 interval;
@@ -43,10 +44,64 @@ contract TestRaffle is Test {
     }
 
     /* General testing functions */
+    function testRaffleStartsWithOpenState() public view {
+        assertEq(uint256(raffle.getRaffleState()), uint256(Raffle.State.Open));
+    }
 
     /* Enter raffle testing functions */
 
     /* Check & perform upkeep testing functions */
 
     /* Fulfill random words testing functions */
+
+    /* Getter function tests */
+    function testGetEntranceFee() public view {
+        assertEq(raffle.getEntranceFee(), entranceFee);
+    }
+
+    function testGetInterval() public view {
+        assertEq(raffle.getInterval(), interval);
+    }
+
+    function testGetKeyHash() public view {
+        assertEq(raffle.getKeyHash(), keyHash);
+    }
+
+    function testGetCallbackGasLimit() public view {
+        assertEq(raffle.getCallbackGasLimit(), callbackGasLimit);
+    }
+
+    function testGetNumWords() public view {
+        assertEq(raffle.getNumWords(), 1);
+    }
+
+    function testGetReqConfirmations() public view {
+        assertEq(raffle.getReqConfirmations(), 3);
+    }
+
+    function testGetRaffleStateIsOpenOnDeploy() public view {
+        assertEq(uint256(raffle.getRaffleState()), uint256(Raffle.State.Open));
+    }
+
+    function testGetLastTimestamp() public view {
+        assertEq(raffle.getLastTimestamp(), block.timestamp);
+    }
+
+    function testGetContractBalanceIsZeroOnDeploy() public view {
+        assertEq(raffle.getContractBalance(), 0);
+    }
+
+    function testGetRecentWinnerIsZeroAddressOnDeploy() public view {
+        assertEq(raffle.getRecentWinner(), address(0));
+    }
+
+    function testGetPlayerReturnsCorrectAddress() public {
+        vm.prank(USER);
+        raffle.enterRaffle{value: SEND_VALUE}();
+        assertEq(raffle.getPlayer(0), USER);
+    }
+
+    function testGetSubId() public view {
+        assertGt(raffle.getSubId(), 0);
+    }
 }
