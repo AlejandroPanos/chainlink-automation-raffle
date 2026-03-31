@@ -11,6 +11,7 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
     error Raffle__RaffleNotOpened();
     error Raffle__UpkeepNotNeeded();
     error Raffle__TransferNotCompleted();
+    error Raffle__DirectTransfersNotAllowed();
 
     /* Type declarations */
     enum State {
@@ -146,6 +147,15 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
         if (!success) {
             revert Raffle__TransferNotCompleted();
         }
+    }
+
+    /* Receive & Fallback */
+    receive() external payable {
+        revert Raffle__DirectTransfersNotAllowed();
+    }
+
+    fallback() external payable {
+        revert Raffle__DirectTransfersNotAllowed();
     }
 
     /* Getter functions */
