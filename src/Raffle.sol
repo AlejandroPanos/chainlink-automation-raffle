@@ -9,6 +9,7 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
     /* Errors */
     error Raffle__NotEnoughEthSent();
     error Raffle__RaffleNotOpened();
+    error Raffle__UpkeepNotNeeded();
 
     /* Type declarations */
     enum State {
@@ -75,7 +76,19 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
             bool upkeepNeeded,
             bytes memory /* performData */
         )
-    {}
+    {
+        // Checks
+        bool timeHasPassed = ((block.timestamp - s_lastTimeStamp) >= i_interval);
+        bool stateIsOpen = s_state == State.Open;
+        bool hasPlayers = s_players.length > 0;
+        bool hasBalance = address(this).balance > 0;
+
+        // Effects
+        upkeepNeeded = timeHasPassed && stateIsOpen && hasPlayers && hasBalance;
+
+        // Interactions
+        return (upkeepNeeded, "");
+    }
 
     function performUpkeep(
         bytes calldata /* performData */
