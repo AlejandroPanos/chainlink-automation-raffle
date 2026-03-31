@@ -3,8 +3,9 @@ pragma solidity ^0.8.19;
 
 import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
 import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
+import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/automation/AutomationCompatible.sol";
 
-contract Raffle is VRFConsumerBaseV2Plus {
+contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
     /* Errors */
     error Raffle__NotEnoughEthSent();
 
@@ -47,6 +48,25 @@ contract Raffle is VRFConsumerBaseV2Plus {
 
     /* Functions */
     function enterRaffle() external payable {}
+
+    function checkUpkeep(
+        bytes calldata /* checkData */
+    )
+        external
+        view
+        override
+        returns (
+            bool upkeepNeeded,
+            bytes memory /* performData */
+        )
+    {}
+
+    function performUpkeep(
+        bytes calldata /* performData */
+    )
+        external
+        override
+    {}
 
     function fulfillRandomWords(
         uint256,
