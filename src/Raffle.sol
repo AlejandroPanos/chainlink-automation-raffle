@@ -175,6 +175,18 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
         return i_keyHash;
     }
 
+    function getCallbackGasLimit() external pure returns (uint256) {
+        return CALLBACK_GAS_LIMIT;
+    }
+
+    function getNumWords() external pure returns (uint256) {
+        return NUM_WORDS;
+    }
+
+    function getReqConfirmations() external pure returns (uint256) {
+        return CONFIRMATIONS;
+    }
+
     function getRaffleState() external view returns (State) {
         return s_state;
     }
