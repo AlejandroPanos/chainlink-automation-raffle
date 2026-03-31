@@ -15,7 +15,7 @@ contract TestRaffle is Test {
     /* State variables */
     address USER = makeAddr("USER");
     uint256 private constant DEAL = 10 ether;
-    uint256 private constant SEND_VALUE = 0.05 ether;
+    uint256 private constant SEND_VALUE = 0.1 ether;
     uint256 private constant LOWER_SEND_VALUE = 0.01 ether;
 
     uint256 entranceFee;

@@ -175,7 +175,7 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
         return i_keyHash;
     }
 
-    function getCallbackGasLimit() external pure returns (uint256) {
+    function getCallbackGasLimit() external pure returns (uint32) {
         return CALLBACK_GAS_LIMIT;
     }
 
