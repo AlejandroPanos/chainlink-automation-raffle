@@ -24,7 +24,7 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
     bytes32 private immutable i_keyHash;
     uint256 private immutable i_subId;
     uint16 private constant CONFIRMATIONS = 3;
-    uint32 private constant GAS_LIMIT = 500000;
+    uint32 private constant CALLBACK_GAS_LIMIT = 500000;
     uint32 private constant NUM_WORDS = 1;
 
     uint256 private immutable i_interval;
@@ -113,7 +113,7 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
                 keyHash: i_keyHash,
                 subId: i_subId,
                 requestConfirmations: CONFIRMATIONS,
-                callbackGasLimit: GAS_LIMIT,
+                callbackGasLimit: CALLBACK_GAS_LIMIT,
                 numWords: NUM_WORDS,
                 extraArgs: VRFV2PlusClient._argsToBytes(VRFV2PlusClient.ExtraArgsV1({nativePayment: false}))
             })
@@ -140,13 +140,13 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
         s_players = new address payable[](0);
         s_lastTimeStamp = block.timestamp;
 
-        emit NewWinner(winner);
-
         // Interactions
         (bool success,) = winner.call{value: amount}("");
         if (!success) {
             revert Raffle__TransferNotCompleted();
         }
+
+        emit NewWinner(winner);
     }
 
     /* Receive & Fallback */
@@ -167,6 +167,18 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
         return i_interval;
     }
 
+    function getSubId() external view returns (uint256) {
+        return i_subId;
+    }
+
+    function getKeyHash() external view returns (bytes32) {
+        return i_keyHash;
+    }
+
+    function getRaffleState() external view returns (State) {
+        return s_state;
+    }
+
     function getLastTimestamp() external view returns (uint256) {
         return s_lastTimeStamp;
     }
@@ -179,8 +191,8 @@ contract Raffle is VRFConsumerBaseV2Plus, AutomationCompatibleInterface {
         return s_players[index];
     }
 
-    function getPlayers() external view returns (address payable[] memory) {
-        return s_players;
+    function getPlayersLength() external view returns (uint256) {
+        return s_players.length;
     }
 
     function getContractBalance() external view returns (uint256) {
